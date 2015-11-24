@@ -36,7 +36,7 @@ func (s *server) init() {
 
 	dictPath, dirtyWordsPath := s.dataPath()
 
-	if dictPath != "" || dirtyWordsPath != "" {
+	if dictPath == "" || dirtyWordsPath == "" {
 		log.Println("dictPath does not exist")
 		return
 	}
@@ -55,8 +55,8 @@ func (s *server) init() {
 	scanner := bufio.NewScanner(f)
 	scanner.Split(bufio.ScanLines)
 
-	for scaner.Scan() {
-		word := strings.ToUpper(string.TrimSpace(scanner.Text()))
+	for scanner.Scan() {
+		word := strings.ToUpper(strings.TrimSpace(scanner.Text()))
 		if word != "" {
 			s.dirtyWords[word] = true
 		}
@@ -80,8 +80,8 @@ func (s *server) dataPath() (dictPath string, dirtyWordsPath string) {
 }
 
 func (s *server) Filter(ctx context.Context, in *pb.WordFilterRequest) (*pb.WordFilterResponse, error) {
-	segmenter := s.segmenter.Segment([]byte(in.Text))
-	cleanText := inText
+	segments := s.segmenter.Segment([]byte(in.Text))
+	cleanText := in.Text
 	words := sego.SegmentsToSlice(segments, false)
 	for k := range words {
 		if s.dirtyWords[strings.ToUpper(words[k])] {
@@ -100,7 +100,7 @@ func main() {
 	}
 	s := grpc.NewServer()
 	ins := &server{}
-	ints.init()
+	ins.init()
 
 	pb.RegisterWordFilterServiceServer(s, ins)
 
