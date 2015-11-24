@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package wordfilter;
+
+message WordFilterRequest {
+    string text = 1;
+}
+
+message WordFilterResponse {
+    string text = 1;
+}
+
+service WordFilterService {
+    rpc Filter(WordFilterRequest) returns (WordFilterResponse);
+}
+
